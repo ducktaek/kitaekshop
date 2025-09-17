@@ -1,565 +1,936 @@
 <!doctype html>
 <html lang="ko">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>오기택의 컴퓨터샵 (HTML+CSS Demo)</title>
-<style>
-  :root{
-    --bg0:#0b1220;
-    --bg1:#0f172a;
-    --panel:#0f172acc;
-    --ring:rgba(255,255,255,.08);
-    --text:#d1fae5;
-    --text-dim:#93c5fd;
-    --accent:#6366f1;
-    --accent-2:#a78bfa;
-    --emerald:#10b981;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-    background:linear-gradient(to bottom,var(--bg1),#0b1322 40%,var(--bg1));
-  }
-  .wrap{min-height:100dvh;position:relative}
-  .container{max-width:1120px;margin:0 auto;padding:0 16px}
-  .ring{border:1px solid var(--ring)}
-  .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .8rem;border-radius:12px;background:transparent;border:1px solid var(--ring);color:var(--text);cursor:pointer}
-  .btn:hover{background:rgba(255,255,255,.06)}
-  .btn-accent{background:color-mix(in oklab, var(--accent) 18%, transparent);border-color:color-mix(in oklab, var(--accent) 45%, transparent)}
-  .btn-accent:hover{background:color-mix(in oklab, var(--accent) 28%, transparent)}
-  .badge{font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .5rem;border-radius:999px;background:color-mix(in oklab, var(--accent) 18%, transparent);border:1px solid color-mix(in oklab, var(--accent) 40%, transparent);color:#c7d2fe}
-  header{
-    position:sticky;top:0;z-index:50;
-    backdrop-filter:blur(8px);
-    background:color-mix(in oklab, var(--bg1) 85%, transparent);
-    border-bottom:1px solid var(--ring);
-  }
-  .h-row{display:flex;align-items:center;gap:.75rem;padding:12px 0}
-  .logo{
-    display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:1.1rem
-  }
-  .logo-mark{
-    display:inline-flex;align-items:center;justify-content:center;
-    width:36px;height:36px;border-radius:14px;
-    background:color-mix(in oklab, var(--accent) 22%, transparent);
-    border:1px solid color-mix(in oklab, var(--accent) 40%, transparent);
-    font-size:18px
-  }
-  .search{
-    display:none;align-items:center;gap:.5rem;border-radius:14px;padding:.5rem .75rem;border:1px solid var(--ring)
-  }
-  .search input{background:transparent;border:0;color:var(--text);outline:none;width:260px}
-  .search input::placeholder{color:#9ca3af}
-  @media (min-width:768px){ .search{display:flex} .btn-filter{display:none} }
-  /* toolbar */
-  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;padding:16px 0}
-  .row-gap{display:flex;align-items:center;gap:.6rem}
-  .range{accent-color:#a78bfa}
-  .pill{border-radius:12px;overflow:hidden;border:1px solid var(--ring);display:inline-flex}
-  .pill button{padding:.6rem .8rem;background:transparent;border:0;color:var(--text);cursor:pointer}
-  .pill button.active{background:rgba(255,255,255,.08)}
-  select{
-    background:transparent;color:var(--text);border:1px solid var(--ring);
-    padding:.6rem .8rem;border-radius:12px
-  }
-  /* grid/list */
-  .grid{display:grid;grid-template-columns:1fr;gap:16px}
-  @media (min-width:640px){ .grid{grid-template-columns:repeat(2,1fr)} }
-  @media (min-width:1024px){ .grid{grid-template-columns:repeat(3,1fr)} }
-  .card{
-    border-radius:16px;padding:16px;border:1px solid var(--ring);
-    background:rgba(255,255,255,.03);transition:.2s box-shadow,.2s transform;
-  }
-  .card:hover{box-shadow:0 8px 24px #0004}
-  .row{display:flex;align-items:center;gap:12px}
-  .thumb{
-    width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(135deg, color-mix(in oklab, var(--accent) 26%, transparent), color-mix(in oklab, var(--accent-2) 26%, transparent));
-    border:1px solid var(--ring);font-size:28px
-  }
-  .meta .title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .meta .price{font-size:.9rem;color:#94a3b8}
-  .spec{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;margin-top:12px;font-size:.92rem}
-  .spec .label{opacity:.7;min-width:56px}
-  .stack{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:12px}
-  /* list layout */
-  .list .card{display:flex;align-items:center;gap:16px}
-  .list .thumb{width:56px;height:56px;font-size:24px}
-  .list .spec{margin:6px 0 0}
-  /* empty */
-  .empty{
-    text-align:center;border:1px solid var(--ring);border-radius:16px;padding:56px 16px;
-    background:rgba(255,255,255,.03)
-  }
-  /* footer */
-  footer{border-top:1px solid var(--ring);padding:32px 0;color:#94a3b8;text-align:center;font-size:.9rem}
-  /* drawers / modals via CSS */
-  /* filter drawer (mobile) */
-  #toggle-filter{display:none}
-  .drawer{
-    position:fixed;inset:0;z-index:70;display:none
-  }
-  #toggle-filter:checked ~ .drawer.filter {display:flex}
-  .panel{
-    width:min(320px,85vw);height:100%;background:var(--panel);
-    border-left:1px solid var(--ring);border-right:1px solid var(--ring);
-  }
-  .overlay{flex:1;background:#0008}
-  .panel .head{display:flex;align-items:center;justify-content:space-between;padding:12px 12px;border-bottom:1px solid var(--ring);font-weight:700}
-  .panel .body{padding:14px}
-  .panel .body .field{margin:14px 0}
-  .panel .apply{width:100%;margin-top:12px}
-  /* cart drawer */
-  #toggle-cart{display:none}
-  #toggle-cart:checked ~ .drawer.cart{display:flex}
-  /* compare drawer (right sidebar mimic) */
-  #toggle-compare{display:none}
-  #toggle-compare:checked ~ .compare-fixed{transform:translateX(0)}
-  .compare-fixed{
-    position:fixed;right:0;top:0;bottom:0;width:min(420px,95vw);
-    background:var(--panel);border-left:1px solid var(--ring);
-    transform:translateX(100%);transition:transform .3s ease;z-index:55;padding:12px
-  }
-  .compare-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
-  .chip{padding:.25rem .5rem;border-radius:8px;border:1px solid var(--ring);font-size:.8rem}
-  .table{border-top:1px solid var(--ring);margin-top:8px}
-  .rowline{display:grid;grid-template-columns:120px repeat(3,1fr);gap:10px;padding:8px 6px;border-bottom:1px solid var(--ring);font-size:.92rem}
-  .rowline .label{opacity:.8}
-  /* detail modal via :target */
-  .modal{position:fixed;inset:0;display:none;z-index:80}
-  .modal:target{display:flex}
-  .modal .sheet{
-    margin:auto;width:min(720px,95vw);background:var(--panel);
-    border:1px solid var(--ring);border-radius:16px;overflow:hidden
-  }
-  .modal .sheet .head{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid var(--ring);font-weight:700}
-  .sheet .body{padding:18px;display:grid;grid-template-columns:1fr;gap:16px}
-  @media (min-width:640px){ .sheet .body{grid-template-columns:200px 1fr} }
-  .bigthumb{
-    height:160px;border-radius:16px;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(135deg, color-mix(in oklab, var(--accent) 26%, transparent), color-mix(in oklab, var(--accent-2) 26%, transparent));
-    border:1px solid var(--ring);font-size:56px
-  }
-  .price-lg{font-size:1.6rem;font-weight:800}
-  .sub{color:#94a3b8;font-size:.9rem}
-  /* top fixed compare toggle button (demo) */
-  .floating{
-    position:fixed;right:12px;bottom:84px;z-index:60;display:flex;flex-direction:column;gap:10px
-  }
-  .note{font-size:.85rem;color:#9aa4b2}
-  /* layout toggles (pure CSS) */
-  #layout-grid:checked ~ main .list {display:none}
-  #layout-grid:checked ~ main .grid {display:grid}
-  #layout-list:checked ~ main .grid {display:none}
-  #layout-list:checked ~ main .list {display:block}
-  /* simple utility */
-  .mt-4{margin-top:1rem}
-  .mt-6{margin-top:1.4rem}
-  .mb-2{margin-bottom:.5rem}
-  .ml-auto{margin-left:auto}
-  .flex{display:flex}
-  .gap-2{gap:.5rem}
-</style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>오기택의 컴퓨터샵 (HTML+CSS Demo)</title>
+    <style>
+        :root {
+            --bg0: #0b1220;
+            --bg1: #0f172a;
+            --panel: #0f172acc;
+            --ring: rgba(255, 255, 255, .08);
+            --text: #d1fae5;
+            --text-dim: #93c5fd;
+            --accent: #6366f1;
+            --accent-2: #a78bfa;
+            --emerald: #10b981;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            color: var(--text);
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            background: linear-gradient(to bottom, var(--bg1), #0b1322 40%, var(--bg1));
+        }
+
+        .wrap {
+            min-height: 100dvh;
+            position: relative
+        }
+
+        .container {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 0 16px
+        }
+
+        .ring {
+            border: 1px solid var(--ring)
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .6rem .8rem;
+            border-radius: 12px;
+            background: transparent;
+            border: 1px solid var(--ring);
+            color: var(--text);
+            cursor: pointer
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, .06)
+        }
+
+        .btn-accent {
+            background: color-mix(in oklab, var(--accent) 18%, transparent);
+            border-color: color-mix(in oklab, var(--accent) 45%, transparent)
+        }
+
+        .btn-accent:hover {
+            background: color-mix(in oklab, var(--accent) 28%, transparent)
+        }
+
+        .badge {
+            font-size: .65rem;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            padding: .25rem .5rem;
+            border-radius: 999px;
+            background: color-mix(in oklab, var(--accent) 18%, transparent);
+            border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+            color: #c7d2fe
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(8px);
+            background: color-mix(in oklab, var(--bg1) 85%, transparent);
+            border-bottom: 1px solid var(--ring);
+        }
+
+        .h-row {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: 12px 0
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-weight: 700;
+            font-size: 1.1rem
+        }
+
+        .logo-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 14px;
+            background: color-mix(in oklab, var(--accent) 22%, transparent);
+            border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+            font-size: 18px
+        }
+
+        .search {
+            display: none;
+            align-items: center;
+            gap: .5rem;
+            border-radius: 14px;
+            padding: .5rem .75rem;
+            border: 1px solid var(--ring)
+        }
+
+        .search input {
+            background: transparent;
+            border: 0;
+            color: var(--text);
+            outline: none;
+            width: 260px
+        }
+
+        .search input::placeholder {
+            color: #9ca3af
+        }
+
+        @media (min-width:768px) {
+            .search {
+                display: flex
+            }
+
+            .btn-filter {
+                display: none
+            }
+        }
+
+        /* toolbar */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: .75rem;
+            padding: 16px 0
+        }
+
+        .row-gap {
+            display: flex;
+            align-items: center;
+            gap: .6rem
+        }
+
+        .range {
+            accent-color: #a78bfa
+        }
+
+        .pill {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--ring);
+            display: inline-flex
+        }
+
+        .pill button {
+            padding: .6rem .8rem;
+            background: transparent;
+            border: 0;
+            color: var(--text);
+            cursor: pointer
+        }
+
+        .pill button.active {
+            background: rgba(255, 255, 255, .08)
+        }
+
+        select {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--ring);
+            padding: .6rem .8rem;
+            border-radius: 12px
+        }
+
+        /* grid/list */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px
+        }
+
+        @media (min-width:640px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        @media (min-width:1024px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr)
+            }
+        }
+
+        .card {
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid var(--ring);
+            background: rgba(255, 255, 255, .03);
+            transition: .2s box-shadow, .2s transform;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 24px #0004
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .thumb {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, color-mix(in oklab, var(--accent) 26%, transparent), color-mix(in oklab, var(--accent-2) 26%, transparent));
+            border: 1px solid var(--ring);
+            font-size: 28px
+        }
+
+        .meta .title {
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .meta .price {
+            font-size: .9rem;
+            color: #94a3b8
+        }
+
+        .spec {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 6px 10px;
+            margin-top: 12px;
+            font-size: .92rem
+        }
+
+        .spec .label {
+            opacity: .7;
+            min-width: 56px
+        }
+
+        .stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            margin-top: 12px
+        }
+
+        /* list layout */
+        .list .card {
+            display: flex;
+            align-items: center;
+            gap: 16px
+        }
+
+        .list .thumb {
+            width: 56px;
+            height: 56px;
+            font-size: 24px
+        }
+
+        .list .spec {
+            margin: 6px 0 0
+        }
+
+        /* empty */
+        .empty {
+            text-align: center;
+            border: 1px solid var(--ring);
+            border-radius: 16px;
+            padding: 56px 16px;
+            background: rgba(255, 255, 255, .03)
+        }
+
+        /* footer */
+        footer {
+            border-top: 1px solid var(--ring);
+            padding: 32px 0;
+            color: #94a3b8;
+            text-align: center;
+            font-size: .9rem
+        }
+
+        /* drawers / modals via CSS */
+        /* filter drawer (mobile) */
+        #toggle-filter {
+            display: none
+        }
+
+        .drawer {
+            position: fixed;
+            inset: 0;
+            z-index: 70;
+            display: none
+        }
+
+        #toggle-filter:checked~.drawer.filter {
+            display: flex
+        }
+
+        .panel {
+            width: min(320px, 85vw);
+            height: 100%;
+            background: var(--panel);
+            border-left: 1px solid var(--ring);
+            border-right: 1px solid var(--ring);
+        }
+
+        .overlay {
+            flex: 1;
+            background: #0008
+        }
+
+        .panel .head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 12px;
+            border-bottom: 1px solid var(--ring);
+            font-weight: 700
+        }
+
+        .panel .body {
+            padding: 14px
+        }
+
+        .panel .body .field {
+            margin: 14px 0
+        }
+
+        .panel .apply {
+            width: 100%;
+            margin-top: 12px
+        }
+
+        /* cart drawer */
+        #toggle-cart {
+            display: none
+        }
+
+        #toggle-cart:checked~.drawer.cart {
+            display: flex
+        }
+
+        /* compare drawer (right sidebar mimic) */
+        #toggle-compare {
+            display: none
+        }
+
+        #toggle-compare:checked~.compare-fixed {
+            transform: translateX(0)
+        }
+
+        .compare-fixed {
+            position: fixed;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: min(420px, 95vw);
+            background: var(--panel);
+            border-left: 1px solid var(--ring);
+            transform: translateX(100%);
+            transition: transform .3s ease;
+            z-index: 55;
+            padding: 12px
+        }
+
+        .compare-header {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .5rem
+        }
+
+        .chip {
+            padding: .25rem .5rem;
+            border-radius: 8px;
+            border: 1px solid var(--ring);
+            font-size: .8rem
+        }
+
+        .table {
+            border-top: 1px solid var(--ring);
+            margin-top: 8px
+        }
+
+        .rowline {
+            display: grid;
+            grid-template-columns: 120px repeat(3, 1fr);
+            gap: 10px;
+            padding: 8px 6px;
+            border-bottom: 1px solid var(--ring);
+            font-size: .92rem
+        }
+
+        .rowline .label {
+            opacity: .8
+        }
+
+        /* detail modal via :target */
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            z-index: 80
+        }
+
+        .modal:target {
+            display: flex
+        }
+
+        .modal .sheet {
+            margin: auto;
+            width: min(720px, 95vw);
+            background: var(--panel);
+            border: 1px solid var(--ring);
+            border-radius: 16px;
+            overflow: hidden
+        }
+
+        .modal .sheet .head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid var(--ring);
+            font-weight: 700
+        }
+
+        .sheet .body {
+            padding: 18px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px
+        }
+
+        @media (min-width:640px) {
+            .sheet .body {
+                grid-template-columns: 200px 1fr
+            }
+        }
+
+        .bigthumb {
+            height: 160px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, color-mix(in oklab, var(--accent) 26%, transparent), color-mix(in oklab, var(--accent-2) 26%, transparent));
+            border: 1px solid var(--ring);
+            font-size: 56px
+        }
+
+        .price-lg {
+            font-size: 1.6rem;
+            font-weight: 800
+        }
+
+        .sub {
+            color: #94a3b8;
+            font-size: .9rem
+        }
+
+        /* top fixed compare toggle button (demo) */
+        .floating {
+            position: fixed;
+            right: 12px;
+            bottom: 84px;
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .note {
+            font-size: .85rem;
+            color: #9aa4b2
+        }
+
+        /* layout toggles (pure CSS) */
+        #layout-grid:checked~main .list {
+            display: none
+        }
+
+        #layout-grid:checked~main .grid {
+            display: grid
+        }
+
+        #layout-list:checked~main .grid {
+            display: none
+        }
+
+        #layout-list:checked~main .list {
+            display: block
+        }
+
+        /* simple utility */
+        .mt-4 {
+            margin-top: 1rem
+        }
+
+        .mt-6 {
+            margin-top: 1.4rem
+        }
+
+        .mb-2 {
+            margin-bottom: .5rem
+        }
+
+        .ml-auto {
+            margin-left: auto
+        }
+
+        .flex {
+            display: flex
+        }
+
+        .gap-2 {
+            gap: .5rem
+        }
+    </style>
 </head>
+
 <body>
-<div class="wrap">
-  <!-- global toggles (CSS only) -->
-  <input type="checkbox" id="toggle-filter" hidden>
-  <input type="checkbox" id="toggle-cart" hidden>
-  <input type="checkbox" id="toggle-compare" hidden>
-  <input type="radio" name="layout" id="layout-grid" hidden checked>
-  <input type="radio" name="layout" id="layout-list" hidden>
+    <div class="wrap">
+        <!-- global toggles (CSS only) -->
+        <input type="checkbox" id="toggle-filter" hidden>
+        <input type="checkbox" id="toggle-cart" hidden>
+        <input type="checkbox" id="toggle-compare" hidden>
+        <input type="radio" name="layout" id="layout-grid" hidden checked>
+        <input type="radio" name="layout" id="layout-list" hidden>
 
-  <!-- Header -->
-  <header>
-    <div class="container h-row">
-      <div class="logo">
-        <span class="logo-mark">🖥️</span>
-        오기택의 컴퓨터샵
-      </div>
+        <!-- Header -->
+        <header>
+            <div class="container h-row">
+                <div class="logo">
+                    <span class="logo-mark">🖥️</span>
+                    오기택의 컴퓨터샵
+                </div>
 
-      <label for="toggle-filter" class="btn btn-filter ml-auto">필터</label>
+                <label for="toggle-filter" class="btn btn-filter ml-auto">필터</label>
 
-      <div class="search ml-auto">
-        <span style="opacity:.6">🔎</span>
-        <input placeholder="검색: i7, 4070, 32GB ..." />
-      </div>
+                <div class="search ml-auto">
+                    <span style="opacity:.6">🔎</span>
+                    <input placeholder="검색: i7, 4070, 32GB ..." />
+                </div>
 
-      <label for="toggle-cart" class="btn" title="장바구니">
-        🛒 <span class="note">3</span>
-        <span class="note">₩3,000,000</span>
-      </label>
-    </div>
-  </header>
+                <label for="toggle-cart" class="btn" title="장바구니">
 
-  <!-- Toolbar -->
-  <div class="container toolbar">
-    <div class="row-gap" style="display:none" id="ram-on-mobile"></div>
-    <div class="row-gap">
-      <span>🎚️</span>
-      <label class="note">최소 RAM</label>
-      <input class="range" type="range" min="0" max="128" step="8" value="0">
-      <span class="note" style="width:48px;text-align:right">0GB</span>
-    </div>
 
-    <div class="ml-auto row-gap">
-      <select>
-        <option>정렬: 추천</option>
-        <option>가격(낮은순)</option>
-        <option>CPU 등급</option>
-        <option>GPU 등급</option>
-        <option>RAM(높은순)</option>
-        <option>이름</option>
-      </select>
-
-      <div class="pill">
-        <label for="layout-grid"><button class="active" id="btn-grid">그리드</button></label>
-        <label for="layout-list"><button id="btn-list">리스트</button></label>
-      </div>
-    </div>
-  </div>
-
-  <!-- Content -->
-  <main class="container" style="padding-bottom:120px">
-    <!-- Grid -->
-    <section class="grid">
-      <!-- Card A -->
-      <article class="card">
-        <div class="row">
-          <div class="thumb">💻</div>
-          <div class="meta" style="flex:1;min-width:0">
-            <div class="row" style="gap:8px">
-              <div class="title">A 컴퓨터</div>
-              <span class="badge">메모리 빵빵</span>
+                </label>
             </div>
-            <div class="price">1000만원 (₩10,000,000)</div>
-          </div>
-          <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
-        </div>
-        <div class="spec">
-          <div class="label">CPU</div><div>인텔 i9-14900K</div>
-          <div class="label">GPU</div><div>NVIDIA RTX 5090</div>
-          <div class="label">RAM</div><div>128GB DDR5</div>
-          <div class="label">저장장치</div><div>NVMe SSD 4TB</div>
-        </div>
-        <div class="stack">
-          <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
-          <a class="btn" href="#detail-A">ℹ️ 상세보기</a>
-        </div>
-      </article>
+        </header>
 
-      <!-- Card B -->
-      <article class="card">
-        <div class="row">
-          <div class="thumb">💻</div>
-          <div class="meta" style="flex:1;min-width:0">
-            <div class="title">B 컴퓨터</div>
-            <div class="price">1000만원 (₩10,000,000)</div>
-          </div>
-          <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
-        </div>
-        <div class="spec">
-          <div class="label">CPU</div><div>인텔 i7-14700K</div>
-          <div class="label">GPU</div><div>NVIDIA RTX 4080 Super</div>
-          <div class="label">RAM</div><div>64GB DDR5</div>
-          <div class="label">저장장치</div><div>NVMe SSD 2TB</div>
-        </div>
-        <div class="stack">
-          <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
-          <a class="btn" href="#detail-B">ℹ️ 상세보기</a>
-        </div>
-      </article>
+        <!-- Toolbar -->
+        <div class="container toolbar">
+            <div class="row-gap" style="display:none" id="ram-on-mobile"></div>
+            <div class="row-gap">
+                <span>🎚️</span>
+                <label class="note">최소 RAM</label>
+                <input class="range" type="range" min="0" max="128" step="8" value="0">
+                <span class="note" style="width:48px;text-align:right">0GB</span>
+            </div>
 
-      <!-- Card C -->
-      <article class="card">
-        <div class="row">
-          <div class="thumb">💻</div>
-          <div class="meta" style="flex:1;min-width:0">
-            <div class="title">C 컴퓨터</div>
-            <div class="price">1000만원 (₩10,000,000)</div>
-          </div>
-          <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
-        </div>
-        <div class="spec">
-          <div class="label">CPU</div><div>인텔 i5-14600K</div>
-          <div class="label">GPU</div><div>NVIDIA RTX 4070 Ti</div>
-          <div class="label">RAM</div><div>32GB DDR5</div>
-          <div class="label">저장장치</div><div>NVMe SSD 1TB</div>
-        </div>
-        <div class="stack">
-          <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
-          <a class="btn" href="#detail-C">ℹ️ 상세보기</a>
-        </div>
-      </article>
+            <div class="ml-auto row-gap">
+                <select>
+                    <option>정렬: 추천</option>
+                    <option>가격(낮은순)</option>
+                    <option>CPU 등급</option>
+                    <option>GPU 등급</option>
+                    <option>RAM(높은순)</option>
+                    <option>이름</option>
+                </select>
 
-      <!-- Card D -->
-      <article class="card">
-        <div class="row">
-          <div class="thumb">💻</div>
-          <div class="meta" style="flex:1;min-width:0">
-            <div class="title">D 컴퓨터</div>
-            <div class="price">1000만원 (₩10,000,000)</div>
-          </div>
-          <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
+                <div class="pill">
+                    <label for="layout-grid"><button class="active" id="btn-grid">그리드</button></label>
+                    <label for="layout-list"><button id="btn-list">리스트</button></label>
+                </div>
+            </div>
         </div>
-        <div class="spec">
-          <div class="label">CPU</div><div>인텔 i5-13400F</div>
-          <div class="label">GPU</div><div>NVIDIA RTX 3060</div>
-          <div class="label">RAM</div><div>16GB DDR4</div>
-          <div class="label">저장장치</div><div>NVMe SSD 512GB</div>
-        </div>
-        <div class="stack">
-          <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
-          <a class="btn" href="#detail-D">ℹ️ 상세보기</a>
-        </div>
-      </article>
 
-      <!-- Card E -->
-      <article class="card">
-        <div class="row">
-          <div class="thumb">💻</div>
-          <div class="meta" style="flex:1;min-width:0">
-            <div class="title">E 컴퓨터</div>
-            <div class="price">1000만원 (₩10,000,000)</div>
-          </div>
-          <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
-        </div>
-        <div class="spec">
-          <div class="label">CPU</div><div>인텔 i3-13100</div>
-          <div class="label">GPU</div><div>Intel UHD Graphics 730</div>
-          <div class="label">RAM</div><div>8GB DDR4</div>
-          <div class="label">저장장치</div><div>SSD 256GB</div>
-        </div>
-        <div class="stack">
-          <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
-          <a class="btn" href="#detail-E">ℹ️ 상세보기</a>
-        </div>
-      </article>
+        <!-- Content -->
+        <main class="container" style="padding-bottom:120px">
+            <!-- Grid -->
+            <section class="grid">
+                <!-- Card A -->
+                <article class="card">
+                    <div class="row">
+                        <div class="thumb">💻</div>
+                        <div class="meta" style="flex:1;min-width:0">
+                            <div class="row" style="gap:8px">
+                                <div class="title">A 컴퓨터</div>
 
-      <!-- Card F -->
-      <article class="card">
-        <div class="row">
-          <div class="thumb">💻</div>
-          <div class="meta" style="flex:1;min-width:0">
-            <div class="title">F 컴퓨터</div>
-            <div class="price">1000만원 (₩10,000,000)</div>
-          </div>
-          <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
-        </div>
-        <div class="spec">
-          <div class="label">CPU</div><div>인텔 Pentium G6400</div>
-          <div class="label">GPU</div><div>Intel UHD Graphics 610</div>
-          <div class="label">RAM</div><div>4GB DDR4</div>
-          <div class="label">저장장치</div><div>SSD 128GB</div>
-        </div>
-        <div class="stack">
-          <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
-          <a class="btn" href="#detail-F">ℹ️ 상세보기</a>
-        </div>
-      </article>
-    </section>
+                            </div>
+                            <div class="price">300만원 (₩3,000,000)</div>
+                        </div>
+                        <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
+                    </div>
+                    <div class="spec">
+                        <div class="label">CPU 성능</div>
+                        <div>10</div>
+                        <div class="label">GPU 성능</div>
+                        <div>10</div>
+                        <div class="label">RAM 성능</div>
+                        <div>10</div>
+                        <div class="label">저장장치 성능</div>
+                        <div>10</div>
+                    </div>
+                    <div class="stack">
+                        <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
+                        <a class="btn" href="#detail-A">ℹ️ 상세보기</a>
+                    </div>
+                </article>
 
-    <!-- List (CSS 토글용, 같은 내용 간략 표기) -->
-    <section class="list" style="display:none">
-      <!-- 하나만 샘플로 노출 -->
-      <article class="card">
-        <div class="thumb">💻</div>
-        <div style="flex:1;min-width:0">
-          <div class="title">A 컴퓨터</div>
-          <div class="spec" style="grid-template-columns:auto auto auto auto;gap:8px 12px">
-            <div class="label">CPU</div><div>i9-14900K</div>
-            <div class="label">GPU</div><div>RTX 5090</div>
-            <div class="label">RAM</div><div>128GB</div>
-            <div class="label">저장</div><div>NVMe 4TB</div>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;width:180px">
-          <div class="note">1000만원</div>
-          <div style="font-weight:700">₩10,000,000</div>
-          <div class="row" style="gap:8px">
-            <a class="btn" href="#detail-A">상세</a>
-            <label for="toggle-cart" class="btn btn-accent">담기</label>
-            <label for="toggle-compare" class="btn">↔️</label>
-          </div>
-        </div>
-      </article>
-      <div class="note mt-4">* 리스트 레이아웃은 데모로 1개만 표시했습니다. (HTML만 사용)</div>
-    </section>
-  </main>
+                <!-- Card B -->
+                <article class="card">
+                    <div class="row">
+                        <div class="thumb">💻</div>
+                        <div class="meta" style="flex:1;min-width:0">
+                            <div class="title">B 컴퓨터</div>
+                            <div class="price">300만원 (₩3,000,000)</div>
+                        </div>
+                        <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
+                    </div>
+                    <div class="spec">
+                        <div class="label">CPU 성능</div>
+                        <div>8</div>
+                        <div class="label">GPU 성능</div>
+                        <div>8</div>
+                        <div class="label">RAM 성능</div>
+                        <div>8</div>
+                        <div class="label">저장장치 성능</div>
+                        <div>8</div>
+                    </div>
+                    <div class="stack">
+                        <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
+                        <a class="btn" href="#detail-B">ℹ️ 상세보기</a>
+                    </div>
+                </article>
 
-  <!-- Compare Drawer (CSS 토글) -->
-  <aside class="compare-fixed">
-    <div class="compare-header">
-      <span>↔️</span>
-      <div style="font-weight:700">비교</div>
-      <label for="toggle-compare" class="btn ml-auto">닫기</label>
+                <!-- Card C -->
+                <article class="card">
+                    <div class="row">
+                        <div class="thumb">💻</div>
+                        <div class="meta" style="flex:1;min-width:0">
+                            <div class="title">C 컴퓨터</div>
+                            <div class="price">300만원 (₩3,000,000)</div>
+                        </div>
+                        <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
+                    </div>
+                    <div class="spec">
+                        <div class="label">CPU 성능</div>
+                        <div>6</div>
+                        <div class="label">GPU 성능</div>
+                        <div>6</div>
+                        <div class="label">RAM 성능</div>
+                        <div>6</div>
+                        <div class="label">저장장치 성능</div>
+                        <div>6</div>
+                    </div>
+                    <div class="stack">
+                        <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
+                        <a class="btn" href="#detail-C">ℹ️ 상세보기</a>
+                    </div>
+                </article>
+
+                <!-- Card D -->
+                <article class="card">
+                    <div class="row">
+                        <div class="thumb">💻</div>
+                        <div class="meta" style="flex:1;min-width:0">
+                            <div class="title">D 컴퓨터</div>
+                            <div class="price">300만원 (₩3,000,000)</div>
+                        </div>
+                        <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
+                    </div>
+                    <div class="spec">
+                        <div class="label">CPU 성능</div>
+                        <div>4</div>
+                        <div class="label">GPU 성능</div>
+                        <div>4</div>
+                        <div class="label">RAM 성능</div>
+                        <div>4</div>
+                        <div class="label">저장장치 성능</div>
+                        <div>4</div>
+                    </div>
+                    <div class="stack">
+                        <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
+                        <a class="btn" href="#detail-D">ℹ️ 상세보기</a>
+                    </div>
+                </article>
+
+                <!-- Card E -->
+                <article class="card">
+                    <div class="row">
+                        <div class="thumb">💻</div>
+                        <div class="meta" style="flex:1;min-width:0">
+                            <div class="title">E 컴퓨터</div>
+                            <div class="price">300만원 (₩3,000,000)</div>
+                        </div>
+                        <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
+                    </div>
+                    <div class="spec">
+                        <div class="label">CPU 성능</div>
+                        <div>2</div>
+                        <div class="label">GPU 성능</div>
+                        <div>2</div>
+                        <div class="label">RAM 성능</div>
+                        <div>2</div>
+                        <div class="label">저장장치 성능</div>
+                        <div>2</div>
+                    </div>
+                    <div class="stack">
+                        <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
+                        <a class="btn" href="#detail-E">ℹ️ 상세보기</a>
+                    </div>
+                </article>
+
+                <!-- Card F -->
+                <article class="card">
+                    <div class="row">
+                        <div class="thumb">💻</div>
+                        <div class="meta" style="flex:1;min-width:0">
+                            <div class="title">F 컴퓨터</div>
+                            <div class="price">300만원 (₩3,000,000)</div>
+                        </div>
+                        <label for="toggle-compare" class="btn" title="비교에 추가">↔️</label>
+                    </div>
+                    <div class="spec">
+                        <div class="label">CPU 성능</div>
+                        <div>1</div>
+                        <div class="label">GPU 성능</div>
+                        <div>1</div>
+                        <div class="label">RAM 성능</div>
+                        <div>1</div>
+                        <div class="label">저장장치 성능</div>
+                        <div>1</div>
+                    </div>
+                    <div class="stack">
+                        <label for="toggle-cart" class="btn btn-accent">🛒 담기</label>
+                        <a class="btn" href="#detail-F">ℹ️ 상세보기</a>
+                    </div>
+                </article>
+            </section>
+
+
+        </main>
+
+        <!-- Compare Drawer (CSS 토글) -->
+        <aside class="compare-fixed">
+            <div class="compare-header">
+                <span>↔️</span>
+                <div style="font-weight:700">비교</div>
+                <label for="toggle-compare" class="btn ml-auto">닫기</label>
+            </div>
+
+            <div class="table mt-4">
+                <div class="rowline" style="font-weight:700">
+                    <div></div>
+
+                </div>
+                <div class="rowline">
+                    <div class="label">가격</div>
+
+                </div>
+                <div class="rowline">
+                    <div class="label">CPU</div>
+
+                </div>
+                <div class="rowline">
+                    <div class="label">GPU</div>
+
+                </div>
+                <div class="rowline">
+                    <div class="label">RAM</div>
+
+                </div>
+                <div class="rowline">
+                    <div class="label">저장장치</div>
+
+                </div>
+                <div class="rowline">
+                    <div class="label">특징</div>
+
+                </div>
+            </div>
+        </aside>
+
+        <!-- Floating quick toggles -->
+        <div class="floating">
+            <label for="toggle-compare" class="btn">↔️ 비교</label>
+            <label for="toggle-cart" class="btn">🛒 장바구니</label>
+        </div>
+
+        <!-- Filter Drawer (mobile) -->
+        <div class="drawer filter">
+            <div class="panel" style="width:min(360px,90vw)">
+                <div class="head">
+                    <div>필터</div>
+                    <label for="toggle-filter" class="btn">닫기</label>
+                </div>
+                <div class="body">
+                    <div class="field">
+                        <label class="note">검색</label>
+                        <div class="row mt-4 ring" style="border-radius:12px;padding:.5rem .75rem">
+                            <span style="opacity:.6">🔎</span>
+                            <input style="flex:1;background:transparent;border:0;outline:none;color:var(--text)"
+                                placeholder="i7, 4070, 32GB ..." />
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="note">최소 RAM</label>
+                        <div class="row" style="gap:.6rem;margin-top:.5rem">
+                            <input class="range" type="range" min="0" max="128" step="8" value="0" style="width:100%">
+                            <span class="note" style="width:52px;text-align:right">0GB</span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="note">정렬</label>
+                        <select class="mt-4" style="width:100%">
+                            <option>추천</option>
+                            <option>가격(낮은순)</option>
+                            <option>CPU 등급</option>
+                            <option>GPU 등급</option>
+                            <option>RAM(높은순)</option>
+                            <option>이름</option>
+                        </select>
+                    </div>
+                    <label for="toggle-filter" class="btn btn-accent apply">적용하기</label>
+                </div>
+            </div>
+            <label for="toggle-filter" class="overlay"></label>
+        </div>
+
+        <!-- Cart Drawer (demo) -->
+        <div class="drawer cart">
+            <div class="panel" style="margin-left:auto;width:min(420px,95vw)">
+                <div class="head">
+                    <div>장바구니</div>
+                    <label for="toggle-cart" class="btn">닫기</label>
+                </div>
+                <div style="padding:14px;display:flex;flex-direction:column;gap:12px;max-height:60dvh;overflow:auto">
+                    <!-- 데모 아이템들 -->
+                    <div class="row ring" style="border-radius:12px;padding:10px">
+                        <div class="thumb" style="width:48px;height:48px;font-size:22px">💻</div>
+                        <div style="flex:1;min-width:0">
+
+                        </div>
+                        <div class="row" style="gap:8px">
+                            <button class="btn" disabled>－</button>
+                            <span style="width:24px;text-align:center">1</span>
+                            <button class="btn" disabled>＋</button>
+                        </div>
+                        <button class="btn" disabled>🗑️</button>
+                    </div>
+
+                    <div class="row ring" style="border-radius:12px;padding:10px">
+                        <div class="thumb" style="width:48px;height:48px;font-size:22px">💻</div>
+                        <div style="flex:1;min-width:0">
+
+                        </div>
+                        <div class="row" style="gap:8px">
+                            <button class="btn" disabled>－</button>
+                            <span style="width:24px;text-align:center">1</span>
+                            <button class="btn" disabled>＋</button>
+                        </div>
+                        <button class="btn" disabled>🗑️</button>
+                    </div>
+
+                    <div class="row ring" style="border-radius:12px;padding:10px">
+                        <div class="thumb" style="width:48px;height:48px;font-size:22px">💻</div>
+                        <div style="flex:1;min-width:0">
+
+                        </div>
+                        <div class="row" style="gap:8px">
+                            <button class="btn" disabled>－</button>
+                            <span style="width:24px;text-align:center">1</span>
+                            <button class="btn" disabled>＋</button>
+                        </div>
+                        <button class="btn" disabled>🗑️</button>
+                    </div>
+                </div>
+                <div style="border-top:1px solid var(--ring);padding:14px">
+                    <div class="row" style="justify-content:space-between;font-size:.95rem">
+
+                    </div>
+                    <button class="btn btn-accent" style="width:100%;margin-top:10px" disabled>✅ 결제</button>
+                </div>
+            </div>
+            <label for="toggle-cart" class="overlay"></label>
+        </div>
+
+
+
+        <!-- Footer -->
+        <footer>© <span id="year"></span> *성능지표는 숫자가 클수록 좋습니다.</footer>
     </div>
-    <div class="row" style="flex-wrap:wrap;gap:8px">
-      <span class="chip">A 컴퓨터</span>
-      <span class="chip">B 컴퓨터</span>
-      <span class="chip">C 컴퓨터</span>
-    </div>
-    <div class="table mt-4">
-      <div class="rowline" style="font-weight:700">
-        <div></div><div>A 컴퓨터</div><div>B 컴퓨터</div><div>C 컴퓨터</div>
-      </div>
-      <div class="rowline"><div class="label">가격</div><div>1000만원 (₩10,000,000)</div><div>1000만원 (₩10,000,000)</div><div>1000만원 (₩10,000,000)</div></div>
-      <div class="rowline"><div class="label">CPU</div><div>i9-14900K</div><div>i7-14700K</div><div>i5-14600K</div></div>
-      <div class="rowline"><div class="label">GPU</div><div>RTX 5090</div><div>RTX 4080S</div><div>RTX 4070 Ti</div></div>
-      <div class="rowline"><div class="label">RAM</div><div>128GB</div><div>64GB</div><div>32GB</div></div>
-      <div class="rowline"><div class="label">저장장치</div><div>NVMe 4TB</div><div>NVMe 2TB</div><div>NVMe 1TB</div></div>
-      <div class="rowline"><div class="label">특징</div><div>—</div><div>—</div><div>—</div></div>
-    </div>
-  </aside>
 
-  <!-- Floating quick toggles -->
-  <div class="floating">
-    <label for="toggle-compare" class="btn">↔️ 비교</label>
-    <label for="toggle-cart" class="btn">🛒 장바구니</label>
-  </div>
-
-  <!-- Filter Drawer (mobile) -->
-  <div class="drawer filter">
-    <div class="panel" style="width:min(360px,90vw)">
-      <div class="head">
-        <div>필터</div>
-        <label for="toggle-filter" class="btn">닫기</label>
-      </div>
-      <div class="body">
-        <div class="field">
-          <label class="note">검색</label>
-          <div class="row mt-4 ring" style="border-radius:12px;padding:.5rem .75rem">
-            <span style="opacity:.6">🔎</span>
-            <input style="flex:1;background:transparent;border:0;outline:none;color:var(--text)" placeholder="i7, 4070, 32GB ..." />
-          </div>
-        </div>
-        <div class="field">
-          <label class="note">최소 RAM</label>
-          <div class="row" style="gap:.6rem;margin-top:.5rem">
-            <input class="range" type="range" min="0" max="128" step="8" value="0" style="width:100%">
-            <span class="note" style="width:52px;text-align:right">0GB</span>
-          </div>
-        </div>
-        <div class="field">
-          <label class="note">정렬</label>
-          <select class="mt-4" style="width:100%">
-            <option>추천</option><option>가격(낮은순)</option><option>CPU 등급</option>
-            <option>GPU 등급</option><option>RAM(높은순)</option><option>이름</option>
-          </select>
-        </div>
-        <label for="toggle-filter" class="btn btn-accent apply">적용하기</label>
-      </div>
-    </div>
-    <label for="toggle-filter" class="overlay"></label>
-  </div>
-
-  <!-- Cart Drawer (demo) -->
-  <div class="drawer cart">
-    <div class="panel" style="margin-left:auto;width:min(420px,95vw)">
-      <div class="head">
-        <div>장바구니</div>
-        <label for="toggle-cart" class="btn">닫기</label>
-      </div>
-      <div style="padding:14px;display:flex;flex-direction:column;gap:12px;max-height:60dvh;overflow:auto">
-        <!-- 데모 아이템들 -->
-        <div class="row ring" style="border-radius:12px;padding:10px">
-          <div class="thumb" style="width:48px;height:48px;font-size:22px">💻</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">A 컴퓨터</div>
-            <div class="note">1000만원 · ₩10,000,000</div>
-          </div>
-          <div class="row" style="gap:8px">
-            <button class="btn" disabled>－</button>
-            <span style="width:24px;text-align:center">1</span>
-            <button class="btn" disabled>＋</button>
-          </div>
-          <button class="btn" disabled>🗑️</button>
-        </div>
-
-        <div class="row ring" style="border-radius:12px;padding:10px">
-          <div class="thumb" style="width:48px;height:48px;font-size:22px">💻</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">B 컴퓨터</div>
-            <div class="note">1000만원 · ₩10,000,000</div>
-          </div>
-          <div class="row" style="gap:8px">
-            <button class="btn" disabled>－</button>
-            <span style="width:24px;text-align:center">1</span>
-            <button class="btn" disabled>＋</button>
-          </div>
-          <button class="btn" disabled>🗑️</button>
-        </div>
-
-        <div class="row ring" style="border-radius:12px;padding:10px">
-          <div class="thumb" style="width:48px;height:48px;font-size:22px">💻</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">C 컴퓨터</div>
-            <div class="note">1000만원 · ₩10,000,000</div>
-          </div>
-          <div class="row" style="gap:8px">
-            <button class="btn" disabled>－</button>
-            <span style="width:24px;text-align:center">1</span>
-            <button class="btn" disabled>＋</button>
-          </div>
-          <button class="btn" disabled>🗑️</button>
-        </div>
-      </div>
-      <div style="border-top:1px solid var(--ring);padding:14px">
-        <div class="row" style="justify-content:space-between;font-size:.95rem">
-          <span class="note">총액</span><span style="font-weight:800">₩3,000,000</span>
-        </div>
-        <button class="btn btn-accent" style="width:100%;margin-top:10px" disabled>✅ 결제 진행 (데모)</button>
-      </div>
-    </div>
-    <label for="toggle-cart" class="overlay"></label>
-  </div>
-
-  <!-- Detail Modals (A~F) -->
-  <div id="detail-A" class="modal">
-    <div class="sheet">
-      <div class="head">
-        <div>A 컴퓨터 상세 정보</div>
-        <a class="btn" href="#">닫기</a>
-      </div>
-      <div class="body">
-        <div class="bigthumb">💻</div>
-        <div>
-          <div class="price-lg">₩10,000,000</div>
-          <div class="sub">표기 가격: 1000만원</div>
-          <div class="spec mt-4">
-            <div class="label">CPU</div><div>인텔 i9-14900K</div>
-            <div class="label">GPU</div><div>NVIDIA RTX 5090</div>
-            <div class="label">RAM</div><div>128GB DDR5</div>
-            <div class="label">저장장치</div><div>NVMe SSD 4TB</div>
-          </div>
-          <div class="stack mt-4">
-            <label for="toggle-cart" class="btn btn-accent">🛒 장바구니 담기</label>
-            <a class="btn" href="#">닫기</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <a class="overlay" href="#"></a>
-  </div>
-
-  <!-- 다른 제품들은 간결 모달 -->
-  <div id="detail-B" class="modal"><div class="sheet"><div class="head"><div>B 컴퓨터 상세 정보</div><a class="btn" href="#">닫기</a></div><div class="body"><div class="bigthumb">💻</div><div><div class="price-lg">₩10,000,000</div><div class="sub">표기 가격: 1000만원</div><div class="spec mt-4"><div class="label">CPU</div><div>인텔 i7-14700K</div><div class="label">GPU</div><div>RTX 4080 Super</div><div class="label">RAM</div><div>64GB DDR5</div><div class="label">저장장치</div><div>NVMe SSD 2TB</div></div><div class="stack mt-4"><label for="toggle-cart" class="btn btn-accent">🛒 장바구니 담기</label><a class="btn" href="#">닫기</a></div></div></div></div><a class="overlay" href="#"></a></div>
-
-  <div id="detail-C" class="modal"><div class="sheet"><div class="head"><div>C 컴퓨터 상세 정보</div><a class="btn" href="#">닫기</a></div><div class="body"><div class="bigthumb">💻</div><div><div class="price-lg">₩10,000,000</div><div class="sub">표기 가격: 1000만원</div><div class="spec mt-4"><div class="label">CPU</div><div>인텔 i5-14600K</div><div class="label">GPU</div><div>RTX 4070 Ti</div><div class="label">RAM</div><div>32GB DDR5</div><div class="label">저장장치</div><div>NVMe SSD 1TB</div></div><div class="stack mt-4"><label for="toggle-cart" class="btn btn-accent">🛒 장바구니 담기</label><a class="btn" href="#">닫기</a></div></div></div></div><a class="overlay" href="#"></a></div>
-
-  <div id="detail-D" class="modal"><div class="sheet"><div class="head"><div>D 컴퓨터 상세 정보</div><a class="btn" href="#">닫기</a></div><div class="body"><div class="bigthumb">💻</div><div><div class="price-lg">₩10,000,000</div><div class="sub">표기 가격: 1000만원</div><div class="spec mt-4"><div class="label">CPU</div><div>인텔 i5-13400F</div><div class="label">GPU</div><div>RTX 3060</div><div class="label">RAM</div><div>16GB DDR4</div><div class="label">저장장치</div><div>NVMe SSD 512GB</div></div><div class="stack mt-4"><label for="toggle-cart" class="btn btn-accent">🛒 장바구니 담기</label><a class="btn" href="#">닫기</a></div></div></div></div><a class="overlay" href="#"></a></div>
-
-  <div id="detail-E" class="modal"><div class="sheet"><div class="head"><div>E 컴퓨터 상세 정보</div><a class="btn" href="#">닫기</a></div><div class="body"><div class="bigthumb">💻</div><div><div class="price-lg">₩10,000,000</div><div class="sub">표기 가격: 1000만원</div><div class="spec mt-4"><div class="label">CPU</div><div>인텔 i3-13100</div><div class="label">GPU</div><div>UHD 730</div><div class="label">RAM</div><div>8GB DDR4</div><div class="label">저장장치</div><div>SSD 256GB</div></div><div class="stack mt-4"><label for="toggle-cart" class="btn btn-accent">🛒 장바구니 담기</label><a class="btn" href="#">닫기</a></div></div></div></div><a class="overlay" href="#"></a></div>
-
-  <div id="detail-F" class="modal"><div class="sheet"><div class="head"><div>F 컴퓨터 상세 정보</div><a class="btn" href="#">닫기</a></div><div class="body"><div class="bigthumb">💻</div><div><div class="price-lg">₩10,000,000</div><div class="sub">표기 가격: 1000만원</div><div class="spec mt-4"><div class="label">CPU</div><div>Pentium G6400</div><div class="label">GPU</div><div>UHD 610</div><div class="label">RAM</div><div>4GB DDR4</div><div class="label">저장장치</div><div>SSD 128GB</div></div><div class="stack mt-4"><label for="toggle-cart" class="btn btn-accent">🛒 장바구니 담기</label><a class="btn" href="#">닫기</a></div></div></div></div><a class="overlay" href="#"></a></div>
-
-  <!-- Footer -->
-  <footer>© <span id="year"></span> 오기택 • 쇼핑몰 UI (HTML+CSS Demo)</footer>
-</div>
-
-<!-- 연도 표시는 JS 없이도 가능하지만, 접근성 위해 미리 채워둠 -->
-<script>document.getElementById('year').textContent=new Date().getFullYear()</script>
+    <!-- 연도 표시는 JS 없이도 가능하지만, 접근성 위해 미리 채워둠 -->
+    <script>document.getElementById('year').textContent = new Date().getFullYear()</script>
 </body>
+
 </html>
